@@ -1,0 +1,67 @@
+#include "myball.dtsi"
+#include <zephyr/dt-bindings/input/input-event-codes.h>
+
+/*
+ * トラックボール(PMW3610)を SPI で接続する設定。
+ * badjeff/zmk-pmw3610-driver の作法に準拠。
+ *
+ * ★ 重要 ★
+ * SCK / MOSI / MISO / CS(cs-gpios) / IRQ(irq-gpios) のピン番号は
+ * すべて仮の値です。実際の配線に合わせて必ず書き換えてください。
+ * (下記はnRF52840の生ピン番号 P0.xx の指定方法です)
+ */
+
+&pinctrl {
+    spi0_default: spi0_default {
+        group1 {
+            psels = <NRF_PSEL(SPIM_SCK, 0, 8)>,
+                    <NRF_PSEL(SPIM_MOSI, 0, 9)>,
+                    <NRF_PSEL(SPIM_MISO, 0, 10)>;
+        };
+    };
+
+    spi0_sleep: spi0_sleep {
+        group1 {
+            psels = <NRF_PSEL(SPIM_SCK, 0, 8)>,
+                    <NRF_PSEL(SPIM_MOSI, 0, 9)>,
+                    <NRF_PSEL(SPIM_MISO, 0, 10)>;
+            low-power-enable;
+        };
+    };
+};
+
+&spi0 {
+    status = "okay";
+    compatible = "nordic,nrf-spim";
+    pinctrl-0 = <&spi0_default>;
+    pinctrl-1 = <&spi0_sleep>;
+    pinctrl-names = "default", "sleep";
+    cs-gpios = <&gpio0 20 GPIO_ACTIVE_LOW>;
+
+    trackball: trackball@0 {
+        status = "okay";
+        compatible = "pixart,pmw3610-alt";
+        reg = <0>;
+        spi-max-frequency = <2000000>;
+        irq-gpios = <&gpio0 6 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+
+        // CPI(感度)。数値を大きくするとカーソルが速く動く
+        cpi = <600>;
+
+        // 向きがおかしい場合は以下のコメントを外して調整
+        // swap-xy;
+        // invert-x;
+        // invert-y;
+
+        evt-type = <INPUT_EV_REL>;
+        x-input-code = <INPUT_REL_X>;
+        y-input-code = <INPUT_REL_Y>;
+    };
+};
+
+/ {
+    trackball_listener {
+        compatible = "zmk,input-listener";
+        device = <&trackball>;
+    };
+};

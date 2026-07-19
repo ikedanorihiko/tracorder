@@ -1,0 +1,40 @@
+if SHIELD_MYBALL_LEFT
+
+config ZMK_KEYBOARD_NAME
+    default "MyBall Left"
+
+# ロータリーエンコーダ (EC11) を使うために必要
+config EC11
+    default y
+
+config EC11_TRIGGER_GLOBAL_THREAD
+    default y
+
+endif # SHIELD_MYBALL_LEFT
+
+if SHIELD_MYBALL_RIGHT
+
+config ZMK_KEYBOARD_NAME
+    default "MyBall Right"
+
+# トラックボール(PMW3610)を使うために必要
+config SPI
+    default y
+
+config INPUT
+    default y
+
+config ZMK_POINTING
+    default y
+
+config PMW3610_ALT
+    default y
+
+endif # SHIELD_MYBALL_RIGHT
+
+if SHIELD_MYBALL_LEFT || SHIELD_MYBALL_RIGHT
+
+config ZMK_SPLIT
+    default y
+
+endif
